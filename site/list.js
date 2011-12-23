@@ -8,9 +8,9 @@
 		var columns = [
 			{id:"linkedName", name:"Name", field:"linkedName", cssClass:"cell-title", width:150, sortable: true},
 			{id:"gender", name:"Gender", field:"gender", width:45},
-			{id:"birthDate", name:"Birth Date", field:"birthDate"},
+			{id:"birthDate", name:"Birth Date", field:"birthDate", sortable: true},
 			{id:"birthPlace", name:"Birth Place", field:"birthPlace", width:150, sortable: false},
-			{id:"deathDate", name:"Death Date", field:"deathDate"},
+			{id:"deathDate", name:"Death Date", field:"deathDate", sortable: true},
 			{id:"deathPlace", name:"Death Place", field:"deathPlace", width: 150, sortable: false}
 		];
 
@@ -29,36 +29,32 @@
 // Define search filter (currently searches name, birth place, and death place)
 		function myFilter(item) {
 
-			var searchFields = ["name","birthPlace","deathPlace"];
-			if (searchString !== ""){
-				searchString = searchString.toUpperCase();
-				var itemFound = false;
-				for (i in searchFields){
-					if (item[searchFields[i]].toUpperCase().indexOf(searchString) != -1){
-						itemFound = true;
+			var searchWords = getWords(searchString);
+			var searchFields = ["name","birthPlace","deathPlace", "birthDate", "deathDate"];
+			if (searchWords){
+				// Go through each of the words in the search string
+				for (j in searchWords){
+					var itemFound = false;
+					searchWord = searchWords[j].toUpperCase();
+					// Make sure that the word is in at least one of the search fields.
+					for (i in searchFields){
+						if (item[searchFields[i]].toUpperCase().indexOf(searchWord) != -1){
+							itemFound = true;
+						}
 					}
-				}
-				if (itemFound === false){
-					return false;
-				}
+					if (itemFound === false){
+						return false;
+					}
 			}
-
-// This is from the original example, and I'm not sure that I understand what it's doing. I think we will need code like this to filter lists that have parents.
-// In the original example, rows can have parents that they're nested under; the rows are hidden if the parents are hidden. We don't need this
-//			var idx = dataView.getIdxById(item.id);
-//
-//			if (item.parent != null) {
-//				var parent = data[item.parent];
-//
-//				while (parent) {
-//					if (parent._collapsed || (searchString != "" && parent["title"].indexOf(searchString) == -1) )	
-//						return false;
-//
-//					parent = data[parent.parent];
-//				}
-//			}
-//
+		}
 			return true;
+		}
+
+// Get all of the words in a search string
+		function getWords(wordString){
+			pattern = /\w+/g;
+			wordArray = wordString.match(pattern);
+			return wordArray;
 		}
 
 // This is my function to do a sort by name any time we change the data.
@@ -71,9 +67,18 @@ function initialSort(){
 // This is the comparer. Right now, it just sorts based on the name.
 	function comparer(a,b) {
 		if (sortcol === "linkedName"){
-		var x = a["name"], y = b["name"];
-		return (x == y ? 0 : (x > y ? 1 : -1));
+			var x = a["name"], y = b["name"];
 	}
+		else if (sortcol === "birthDate"){
+			var x = a["birthDateKey"], y = b["birthDateKey"];
+		}
+		else if (sortcol === "deathDate"){
+			var x = a["deathDateKey"], y = b["deathDateKey"];
+		}
+		else {
+			var x = a[sortcol], y = b[sortcol];
+		}
+		return (x == y ? 0 : (x > y ? 1 : -1));
 } 
 
 		
@@ -138,13 +143,8 @@ else { // If they want the whole watchlist, then reset to the original data.
 	// Go through each item and put it into the data object
   $.each(json, function(key, val) {
 	  var d = (data[key] = {});
-// We don't need parent or indent because we're not expanding/collapsing rows
-//	  var parent = null;
-//	  var indent = 0;
+
 				d["id"] = "id_" + key;
-//				d["indent"] = indent;
-//				// This refers to whether a node has a parent in the grid
-//				d["parent"] = parent;
 				d["title"] = val.title;
 				// This is used for searching, not display
 // surname and given name may be missing; default to "" like other fields
@@ -152,8 +152,10 @@ else { // If they want the whole watchlist, then reset to the original data.
 				d["linkedName"] = '<a href="http://www.werelate.org/wiki/Person:' + val.title + '">' + (val.surname||"") + ', ' + (val.given||"") + '</a>'||"";
 				d["gender"] = val.gender||"";
 				d["birthDate"] = val.birthDate||"";
+				d["birthDateKey"] = getDateKey(val.birthDate||"");
 				d["birthPlace"] = val.birthPlace||"";
 				d["deathDate"] = val.deathDate||"";
+				d["deathDateKey"] = getDateKey(val.deathDate||"");
 				d["deathPlace"] = val.deathPlace||"";
 			});
 
@@ -172,10 +174,7 @@ else { // If they want the whole watchlist, then reset to the original data.
 			// initialize the grid
 			grid = new Slick.Grid("#myGrid", dataView, columns, options);
 
-// We don't need this since we're not allowing cell editing
-//            grid.onCellChange.subscribe(function(e,args) {
-//                dataView.updateItem(args.item.id,args.item);
-//            });
+
             
 // We don't need something like this until we allow people to click on a star to flag a row (like gmail)
 //			grid.onClick.subscribe(function(e,args) {
@@ -230,6 +229,143 @@ else { // If they want the whole watchlist, then reset to the original data.
 		initialSort(); // Ok - this is mine, not from SlickGrid.
 		})
 		};
+
+
+// Dallan's sortable date code.
+
+var MONTHS = {
+	'january': 1,
+	'february': 2,
+	'march': 3,
+	'april': 4,
+	'may': 5,
+	'june': 6,
+	'july': 7,
+	'august': 8,
+	'september': 9,
+	'october': 10,
+	'november': 11,
+	'december': 12,
+	'jan': 1,
+	'feb': 2,
+	'mar': 3,
+	'apr': 4,
+	'jun': 6,
+	'jul': 7,
+	'aug': 8,
+	'sep': 9,
+	'oct': 10,
+	'nov': 11,
+	'dec': 12,
+	'febr': 2,
+	'sept': 9
+};
+
+function isYear(y) {
+	return (y >= 100 && y <= 3000);
+}
+
+function getAlphaMonth(mon) {
+	return MONTHS[mon.toLowerCase()];
+}
+
+function isDay(d) {
+	return (d >= 1 && d <= 31);
+}
+
+function isNumMonth(m) {
+	return (m >= 1 && m <= 12);
+}
+
+function isNextYear(year, field) {
+	if (field.length > 4) return
+	false;
+	var y = year.toString();
+	if ((field === '00' && y.substr(2) === '99') || (field === '0' && y.substr(3) === '9')) return true;
+	newYear = y.substr(0, 4 - field.length) + field;
+	return (parseInt(newYear) - parseInt(year) === 1);
+}
+
+function getDateFields(date) {
+	var fields = [];
+	var field = '';
+	var isNumericField; // split on number-letter transition, or non - alphanumeric
+	for (var i = 0; i < date.length; i++) {
+		var c = date.charAt(i);
+		if (c >= '0' && c <= '9') {
+			if (field.length > 0 && !isNumericField) {
+				fields.push(field);
+				field = '';
+			}
+			field += c;
+			isNumericField = true;
+		}
+		// assume non-7bit-ascii characters are international
+		// we'll eventually want to add international months to the MONTHS array
+		else if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || c > '~') {
+			if (field.length > 0 && isNumericField) {
+				fields.push(field);
+				field = '';
+			}
+			field += c;
+			isNumericField = false;
+		} else if (field.length > 0) {
+			fields.push(field);
+			field = '';
+		}
+	}
+	if (field.length > 0) {
+		fields.push(field);
+	}
+	return fields;
+}
+
+function getDateKey(date) {
+	var year = 0;
+	var month = 0;
+	var day = 0;
+	var result = '00000000';
+	var fields = getDateFields(date);
+	for (var i = 0; i < fields.length; i++) {
+		var field = fields[i];
+		var numField = parseInt(field);
+		var m = getAlphaMonth(field);
+		if (isYear(numField)) {
+			if (year === 0) year = numField;
+		} else if (m !== undefined) {
+			if (month === 0) month = m;
+		} else if (i > 0 && isYear(parseInt(fields[i - 1])) && isNextYear(year, field)) {
+			year++; // 1963/4 or 1963/64
+			}
+			else if (isDay(numField) && (!isNumMonth(numField) || (i > 0 && getAlphaMonth(fields[i - 1]) !== undefined) || (i < fields.length - 1 && getAlphaMonth(fields[i + 1]) !== undefined))) {
+				if (day === 0) day = numField;
+			} else if (isNumMonth(numField)) {
+				if (month === 0) month = numField;
+			}
+		}
+		if (year !== 0) {
+			result = year.toString();
+			if (month !== 0) {
+				if (month < 10) {
+					result += '0';
+				}
+				result += month.toString();
+				if (day !== 0) {
+					if (day < 10) {
+						result += '0';
+					}
+					result += day.toString();
+				} else {
+					result += '00';
+				}
+			} else {
+				result += '0000';
+			}
+		}
+		return parseInt(result);
+	}
+
+
 
 // Ready, set, go.
 $(function()
