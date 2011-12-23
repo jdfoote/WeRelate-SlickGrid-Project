@@ -1,0 +1,55 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+		<title>WeRelate SlickGrid Example</title>
+		<link rel="stylesheet" href="../slick.grid.css" type="text/css" media="screen" charset="utf-8" />
+        <link rel="stylesheet" href="../css/smoothness/jquery-ui-1.8.16.custom.css" type="text/css" media="screen" charset="utf-8" />
+		<link rel="stylesheet" href="examples.css" type="text/css" media="screen" charset="utf-8" />
+<!--		<script src="../lib/firebugx.js"></script>
+-->
+		<script src="../lib/jquery-1.7.min.js"></script>
+		<script src="../lib/jquery-ui-1.8.16.custom.min.js"></script>
+		<script src="../lib/jquery.event.drag-2.0.min.js"></script>
+		<script src="../slick.core.js"></script>
+<!--		<script src="../slick.editors.js"></script>
+-->
+		<script src="../slick.grid.js"></script>
+		<script src="../slick.dataview.js"></script>
+<!-- moved custom javascript into list.js -->
+		<script src="list.js"></script>
+		<style>
+		.cell-title {
+			font-weight: bold;
+		}
+
+		.cell-effort-driven {
+			text-align: center;
+		}
+
+		.toggle {
+			height: 9px;
+			width: 9px;
+			display: inline-block;
+		}
+
+
+	</style>
+	</head>
+	<body>
+		<table width="100%">
+		<tr>
+			<td valign="top" width="900px">
+				<div style="border:1px solid gray;background:wheat;padding:6px; width: 850px;">
+					<br/>
+					<div id = "treeFilter"></div>
+					<label>Search Filter:</label>
+					<input type=text id="txtSearch">
+				</div>
+				<br/>
+				<div id="myGrid" style="width:850px;height:500px;"></div>
+			</td>
+		</tr>
+		</table>
+	</body>
+</html>
