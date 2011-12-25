@@ -52,7 +52,7 @@
 
 // Get all of the words in a search string
 		function getWords(wordString){
-			pattern = /\w+/g;
+			pattern = /[^, ]+/g;
 			wordArray = wordString.match(pattern);
 			return wordArray;
 		}
