@@ -102,6 +102,8 @@ function initialSort(){
 
 // This function loads a new tree from the dropdown list.
 function loadNewTree(user, treeName){
+	// Loading .gif while waiting for AJAX
+	$("#myGrid").mask("Loading...");
 	var newData = [];
 	// Check if it's asking for a tree, or for the full watchlist
 	if (treeName != "wfWatchlist"){
@@ -124,6 +126,7 @@ function loadNewTree(user, treeName){
 		grid.updateRowCount();
 		grid.render();
 		initialSort();
+		$("#myGrid").unmask();
 });
 }
 else { // If they want the whole watchlist, then reset to the original data.
@@ -136,6 +139,8 @@ else { // If they want the whole watchlist, then reset to the original data.
 
 	// This function takes a user name and tree name, loads the data, and initializes the grid. This has to be called before the grid shows up.
 	function loadTree(user){
+		// Masks the div, and puts up a loading image
+		$("#myGrid").mask("Loading...");
 // need the www so we pick up the sign-in cookie
 		var jsonURL = 'http://www.werelate.org/w/index.php?action=ajax&rs=wfGetWatchlist&user=' + user + '&callback=?';
 		$.getJSON(jsonURL,function(json){
@@ -227,6 +232,8 @@ else { // If they want the whole watchlist, then reset to the original data.
 				dataView.refresh();
 			})
 		initialSort(); // Ok - this is mine, not from SlickGrid.
+		$("#myGrid").unmask();
+		
 		})
 		};
 
@@ -377,7 +384,7 @@ $(function()
 			if (results) {
 				user = results[2];
 			}
-			loadTree(user);
 			getTreeList(user);
+			loadTree(user);
 		}
 		);
