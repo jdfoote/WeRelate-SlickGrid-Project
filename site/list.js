@@ -9,9 +9,10 @@
 			{id:"linkedName", name:"Name", field:"linkedName", cssClass:"cell-title", width:150, sortable: true},
 			{id:"gender", name:"Gender", field:"gender", width:45},
 			{id:"birthDate", name:"Birth Date", field:"birthDate", sortable: true},
-			{id:"birthPlace", name:"Birth Place", field:"birthPlace", width:150, sortable: false},
+			{id:"birthPlace", name:"Birth Place", field:"birthPlace", width:120, sortable: true},
 			{id:"deathDate", name:"Death Date", field:"deathDate", sortable: true},
-			{id:"deathPlace", name:"Death Place", field:"deathPlace", width: 150, sortable: false}
+			{id:"deathPlace", name:"Death Place", field:"deathPlace", width: 120, sortable: true},
+         {id:"trees", name:"Tree(s)", field:"trees", width:60, sortable: true}
 		];
 
 // Set SlickGrid options
@@ -31,13 +32,15 @@
 
 			var searchWords = getWords(searchString);
 			var searchFields = ["name","birthPlace","deathPlace", "birthDate", "deathDate"];
+         var searchFieldsLength = searchFields.length;
 			if (searchWords){
 				// Go through each of the words in the search string
-				for (j in searchWords){
+            var searchWordsLength = searchWords.length;
+				for (var j = 0; j < searchWordsLength; j++){
 					var itemFound = false;
 					searchWord = searchWords[j].toUpperCase();
 					// Make sure that the word is in at least one of the search fields.
-					for (i in searchFields){
+					for (var i = 0; i < searchFieldsLength; i++) {
 						if (item[searchFields[i]].toUpperCase().indexOf(searchWord) != -1){
 							itemFound = true;
 						}
@@ -88,7 +91,7 @@ function initialSort(){
 		var jsonURL = 'http://www.werelate.org/w/index.php?action=ajax&rs=wfGetTrees&user=' + user + '&callback=?';
 		$.getJSON(jsonURL,function(json){
 		// Set up the select menu
-		$('#treeFilter').append('<label>Select Tree: </label><select id="treeSelect"><option value="wfWatchlist" selected="selected">All Trees</option></select>');
+		$('#treeFilter').append('<label>Tree: </label><select id="treeSelect"><option value="wfWatchlist" selected="selected">All Trees</option></select>');
 // pick up user from the closure (because I removed the global user variable)
 		$('#treeSelect').change(function() {
 			loadNewTree(user, this.value);
@@ -162,6 +165,7 @@ else { // If they want the whole watchlist, then reset to the original data.
 				d["deathDate"] = val.deathDate||"";
 				d["deathDateKey"] = getDateKey(val.deathDate||"");
 				d["deathPlace"] = val.deathPlace||"";
+                d["trees"] = val.trees||"";
 			});
 
 
