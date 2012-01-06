@@ -7,6 +7,7 @@
         <link rel="stylesheet" href="../css/smoothness/jquery-ui-1.8.16.custom.css" type="text/css" media="screen" charset="utf-8" />
 		<link rel="stylesheet" href="examples.css" type="text/css" media="screen" charset="utf-8" />
 		<link href="../lib/jquery.loadmask.css" rel="stylesheet" type="text/css" />
+		<link href="../lib/jquery.multiselect.css" rel="stylesheet" type="text/css" />
 
 		<script src="../lib/jquery-1.7.min.js"></script>
 		<script src="../lib/jquery-ui-1.8.16.custom.min.js"></script>
@@ -16,6 +17,7 @@
 		<script src="../slick.grid.js"></script>
 		<script src="../slick.dataview.js"></script>
 		<script type="text/javascript" src="../lib/jquery.loadmask.min.js"></script>
+		<script src="../lib/jquery.multiselect.js"></script>
 		<script src="list.js"></script>
 		<style>
 		.cell-title {
@@ -41,14 +43,17 @@
 			<td valign="top" width="900px">
 				<div style="border:1px solid gray;background:wheat;padding:6px; width: 850px;">
 					<br/>
-					<div id = "treeFilter"></div>
+					<div id = "treeFilter" style="float:right"></div>
 					<label>Search Filter:</label>
 					<input type=text id="txtSearch">
 				</div>
 				<br/>
 				<div id="myGrid" style="width:850px;height:500px;"></div>
+				<br/>
+				<div id="rowCount" style="width:850px;"></div>
 			</td>
 		</tr>
+
 		</table>
 	</body>
 </html>
