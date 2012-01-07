@@ -1,6 +1,7 @@
 // Set global variables
 		var dataView;
 		var grid;
+
 		var activeTrees;
 		var data = [];
 
@@ -12,7 +13,7 @@
 			{id:"birthPlace", name:"Birth Place", field:"birthPlace", width:120, sortable: true},
 			{id:"deathDate", name:"Death Date", field:"deathDate", sortable: true},
 			{id:"deathPlace", name:"Death Place", field:"deathPlace", width: 120, sortable: true},
-			{id:"trees", name:"Tree(s)", field:"trees", width:60, sortable: true}
+         {id:"trees", name:"Tree(s)", field:"trees", width:60, sortable: true}
 		];
 
 // Set SlickGrid options
@@ -29,55 +30,49 @@
 
 // Define search filter (currently searches name, birth place, and death place)
 		function myFilter(item) {
+
 			var itemTrees = getWords(item.trees);
-		// Check if at least one of the item's trees is in the list of active trees.
-			// If there aren't any trees on the item, then give it the wfNoTree value.
-			if (!itemTrees){
-				itemTrees = ["wfNoTree"];
-			}
-			// If no trees are selected, then don't show anything.
-			if (!activeTrees){
-				return false;
-			}
-			else {
-			var inTrees = false;
-			for (var t = 0; t < itemTrees.length; t++){
-				//alert(itemTrees[t], activeTrees);
-				if ($.inArray(itemTrees[t],activeTrees) != -1){
-					//alert("Match Found");
-					inTrees = true;
-					break;
-				}
-			}
-		}
+   		// Check if at least one of the item's trees is in the list of active trees.
+         if (!activeTrees) {
+            return false;
+         }
+         var inTrees = false;
+         var activeTreesLength = activeTrees.length;
+         for (var t = 0; t < activeTreesLength; t++) {
+            var activeTree = activeTrees[t];
+            if ((activeTree == 'wfNoTree' && !item.trees) || item.trees.indexOf(activeTree) >= 0) {
+               inTrees = true;
+               break;
+            }
+         }
 			if (!inTrees){
 				//alert("No inTrees!");
 				return false;
 			}
 			else {
-				var searchWords = getWords(searchString);
-				var searchFields = ["name","birthPlace","deathPlace", "birthDate", "deathDate"];
-				var searchFieldsLength = searchFields.length;
-				if (searchWords){
-					// Go through each of the words in the search string
-					var searchWordsLength = searchWords.length;
-					for (var j = 0; j < searchWordsLength; j++){
-						var itemFound = false;
-						searchWord = searchWords[j].toUpperCase();
-						// Make sure that the word is in at least one of the search fields.
-						for (var i = 0; i < searchFieldsLength; i++) {
-							if (item[searchFields[i]].toUpperCase().indexOf(searchWord) != -1){
-								itemFound = true;
-							}
+			var searchWords = getWords(searchString);
+			var searchFields = ["name","birthPlace","deathPlace", "birthDate", "deathDate"];
+         var searchFieldsLength = searchFields.length;
+			if (searchWords){
+				// Go through each of the words in the search string
+            var searchWordsLength = searchWords.length;
+				for (var j = 0; j < searchWordsLength; j++){
+					var itemFound = false;
+					searchWord = searchWords[j].toUpperCase();
+					// Make sure that the word is in at least one of the search fields.
+					for (var i = 0; i < searchFieldsLength; i++) {
+						if (item[searchFields[i]].toUpperCase().indexOf(searchWord) != -1){
+							itemFound = true;
 						}
-						if (itemFound === false){
-							return false;
-						}
-				}
+					}
+					if (itemFound === false){
+						return false;
+					}
 			}
-				return true;
+		}
+			return true;
 			}
-	}
+		}
 
 // Given a string of words separated by commas and/or spaces, return an array of the words.
 		function getWords(wordString){
@@ -88,12 +83,10 @@
 
 // This is my function to do a sort by name any time we change the data.
 
-	function initialSort(){
-		sortcol = "linkedName";
-		dataView.sort(comparer, 1);
+function initialSort(){
+	sortcol = "linkedName";
+	dataView.sort(comparer, 1);
 }
-
-
 
 // This is the comparer. Right now, it just sorts based on the name.
 	function comparer(a,b) {
@@ -117,10 +110,10 @@
 		var rowCount = dataView.getLength();
 		var content;
 		if (rowCount === 1){
-			content = '<b>' + rowCount.toString() + '</b> person in the list.'
+			content = '<b>' + rowCount.toString() + '</b> person found'
 		}
 		else {
-			content = '<b>' + rowCount.toString() + '</b> people in the list.'
+			content = '<b>' + rowCount.toString() + '</b> people found'
 		}
 		$("#rowCount").html(content);
 	}
@@ -131,34 +124,45 @@
 		var jsonURL = 'http://www.werelate.org/w/index.php?action=ajax&rs=wfGetTrees&user=' + user + '&callback=?';
 		$.getJSON(jsonURL,function(json){
 		// Create the initial select box
-		$("#treeFilter").append('<label>Tree: </label><select id="treeSelect" name="treeSelect" multiple="multiple"><option value="wfNoTree">No Tree</option></select>')
+		$("#treeFilter").append('<label>Tree: </label><select id="treeSelect" name="treeSelect" multiple="multiple"></select>')
 		$.each(json, function(key,text){
 			// Create an option in the select menu for each tree
 			$('#treeSelect').append('<option value="' + text + '">' + text + '</option>')
 		});
+      $('#treeSelect').append('<option value="wfNoTree">No Tree</option>');
 	// Initialize the select menu as a multiselect.
 		$("#treeSelect").multiselect({
-		selectedList: 4,
+      noneSelectedText: 'Check trees',
+		selectedText: function(numChecked, numTotal, checkedItems) {
+         if (numChecked == numTotal) {
+            return 'All trees';
+         }
+         else if (numChecked == 1) {
+            return $(checkedItems[0]).attr("title");
+         }
+         else {
+            return numChecked+' selected';
+         }
+      },
 		checkAllText: "Check all trees",
 		create: function(event, ui){
 			$("#treeSelect").multiselect("checkAll");
 			activeTrees = $.map($(this).multiselect("getChecked"), function( input ){
             return input.value;
-        });
-		}
+	});
+}
+
 		})
 		.bind("multiselectclick multiselectcheckall multiselectuncheckall", function(event, ui){
 			activeTrees = $.map($(this).multiselect("getChecked"), function( input ){
             return input.value;
-        });
+		 });
 			dataView.refresh();
-			});
+});
 	// Loads all of the people for a given user.
 	loadTree(user);
 	});
 }
-
-
 
 	// This function takes a user name and tree name, loads the data, and initializes the grid. This has to be called before the grid shows up.
 	function loadTree(user){
